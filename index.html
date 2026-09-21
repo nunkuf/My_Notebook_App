@@ -30,10 +30,10 @@ button,input{font:inherit}
 .ordered-column{min-height:520px}
 .list-empty{border:1px dashed var(--line);border-radius:10px;padding:30px;text-align:center;color:var(--muted)}
 .ordered-item{display:flex;align-items:stretch;gap:7px;margin:7px 0}
-.drag-handle{width:28px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--muted);user-select:none;border:1px solid var(--line);border-radius:8px;background:#faf8f4}
-.drag-handle:active{cursor:grabbing}
-.item-card{flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:white;padding:12px 14px}
-.item-card.textbox-card{background:#fbfaf7;border-color:transparent;padding:10px 8px}
+.drag-handle{width:22px;display:flex;align-items:center;justify-content:center;cursor:grab;color:#d2cdc4;user-select:none;border:0;background:transparent;opacity:.65}
+.drag-handle:hover{opacity:1}.drag-handle:active{cursor:grabbing}
+.item-card{flex:1;min-width:0;border:0;border-radius:9px;background:white;padding:12px 14px}
+.item-card.textbox-card{background:#fefdfa;border:0;padding:10px 8px}
 .file-link{display:block;color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
 .file-link:hover{text-decoration:underline}
 .textbox{font-weight:650;min-height:24px;outline:none}
@@ -44,11 +44,14 @@ button,input{font:inherit}
 .drag-over{outline:2px solid #aaa}
 .note-canvas{position:relative;min-height:620px;border:1px dashed var(--line);border-radius:12px;background:#fbfaf7;overflow:visible}
 .canvas-label{position:absolute;top:10px;right:12px;font-size:11px;color:#aaa;pointer-events:none}
-.sticky{position:absolute;width:220px;min-height:135px;background:var(--note);border:1px solid #dfce7d;border-radius:5px;box-shadow:0 3px 10px rgba(0,0,0,.08);display:flex;flex-direction:column}
-.sticky-head{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 7px;cursor:grab;border-bottom:1px solid rgba(0,0,0,.08);user-select:none}
+.sticky{position:absolute;width:220px;min-height:135px;background:var(--note);border:1px solid rgba(0,0,0,.10);border-radius:5px;box-shadow:0 3px 10px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.sticky-head{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 7px;cursor:grab;border-bottom:1px solid rgba(0,0,0,.06);user-select:none}
 .sticky-head:active{cursor:grabbing}
 .sticky-body{padding:11px;min-height:100px;outline:none;white-space:pre-wrap;overflow-wrap:anywhere;flex:1}
-.sticky-delete{border:0;background:transparent;cursor:pointer;color:#716735;font-size:12px}
+.sticky-delete{border:0;background:transparent;cursor:pointer;color:rgba(36,35,33,.48);font-size:15px;line-height:1}
+.note-colors{display:flex;align-items:center;gap:5px}
+.color-dot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.08);padding:0;cursor:pointer;box-shadow:none}
+.color-dot.active{outline:1px solid rgba(0,0,0,.28);outline-offset:1px}
 .hidden{display:none!important}
 @media(max-width:900px){.shell{grid-template-columns:1fr;grid-template-areas:"projects" "main"}.projects{border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;display:flex;gap:5px;overflow:auto}.projects-title{display:none}.project-tab{width:auto;white-space:nowrap}.main{border-radius:0 0 12px 12px}.section-grid{grid-template-columns:1fr}.note-canvas{min-height:420px}}
 </style>
@@ -75,6 +78,7 @@ button,input{font:inherit}
 const projects=window.notebookData?.projects||[];
 const writingFiles=window.notebookData?.writingFiles||{};
 const sections=[["writing","כתיבה"],["sources","מקורות"],["notes","הערות"],["tasks","משימות"]];
+const NOTE_COLORS={yellow:"#fff3b8",blue:"#dfeef9",green:"#e2f1df",pink:"#f7e1e7",peach:"#f8e5d2",gray:"#eceae5"};
 let p=localStorage.getItem("pn.p"); if(!projects.includes(p)) p=projects[0]||"";
 let s=localStorage.getItem("pn.s")||"writing"; if(!sections.some(x=>x[0]===s)) s="writing";
 
@@ -211,7 +215,7 @@ function renderLinear(){
     }
     const tools=document.createElement("div");tools.className="item-tools";
     const gap=document.createElement("button");gap.className="mini";gap.textContent="↕";gap.title="שנה את הרווח לפני הפריט";
-    gap.onclick=()=>{const old=sec.gaps[e.id]||0;const next=old===0?32:old===32?64:0;sendEvent({op:"gap",project:p,section:s,id:e.id,gap:next})};
+    gap.onclick=()=>{const old=sec.gaps[e.id]||0;const next=old===0?96:old===96?192:0;sendEvent({op:"gap",project:p,section:s,id:e.id,gap:next})};
     tools.appendChild(gap);
     if(e.kind==="file"){
       const del=document.createElement("button");del.className="mini";del.textContent="×";del.title="הסר מהקלסר";del.onclick=()=>{window.location.href=removeURL(e.path)};tools.appendChild(del);
@@ -233,7 +237,7 @@ function addTask(){
 }
 function addNote(){
   if(!p)return;const text=prompt("טקסט הפתק:","פתק חדש");if(text===null)return;const id=uid("note");
-  sendEvent({op:"upsert",project:p,section:s,kind:"note",id,data:{text,x:.06,y:.08}});
+  sendEvent({op:"upsert",project:p,section:s,kind:"note",id,data:{text,x:.06,y:.08,color:"yellow"}});
 }
 
 function canvasBaseHeight(){
@@ -259,22 +263,31 @@ function renderNotes(){
   canvas.style.height=canvasBaseHeight()+"px";
   notes().forEach(n=>{
     const el=document.createElement("div");el.className="sticky";
+    const colorKey=NOTE_COLORS[n.color]?n.color:"yellow";
+    el.style.background=NOTE_COLORS[colorKey];
     const pos=notePosition(n,canvas);
     const maxX=Math.max(1,canvas.clientWidth-220);
     const startX=Math.max(0,Math.min(maxX,pos.x)),startY=Math.max(0,pos.y);
     el.style.left=Math.round(startX)+"px";el.style.top=Math.round(startY)+"px";
     growCanvasTo(canvas,startY+135);
-    const head=document.createElement("div");head.className="sticky-head";head.innerHTML="<span>פתק</span>";
+    const head=document.createElement("div");head.className="sticky-head";
+    const colors=document.createElement("div");colors.className="note-colors";
+    Object.entries(NOTE_COLORS).forEach(([key,value])=>{
+      const b=document.createElement("button");b.className="color-dot"+(key===colorKey?" active":"");b.style.background=value;b.title="צבע פתק";
+      b.onpointerdown=ev=>{ev.preventDefault();ev.stopPropagation();};
+      b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();sendEvent({op:"upsert",project:p,section:s,kind:"note",id:n.id,data:{color:key}})};
+      colors.appendChild(b);
+    });
     const del=document.createElement("button");del.className="sticky-delete";del.textContent="×";del.title="מחק פתק";
     let deleting=false;
     del.onpointerdown=ev=>{ev.preventDefault();ev.stopPropagation();};
     del.onclick=ev=>{ev.preventDefault();ev.stopPropagation();deleting=true;if(confirm("למחוק את הפתק?"))sendEvent({op:"delete",project:p,section:s,id:n.id});else deleting=false;};
-    head.appendChild(del);
+    head.append(colors,del);
     const body=document.createElement("div");body.className="sticky-body";body.contentEditable="true";body.textContent=n.text||"";
     body.onblur=()=>{if(!deleting)sendEvent({op:"upsert",project:p,section:s,kind:"note",id:n.id,data:{text:body.textContent,x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0}})};
     let drag=null;
     head.onpointerdown=ev=>{
-      if(ev.target===del)return;
+      if(ev.target.closest("button"))return;
       ev.preventDefault();head.setPointerCapture(ev.pointerId);
       const r=el.getBoundingClientRect(),cr=canvas.getBoundingClientRect();drag={dx:ev.clientX-r.left,dy:ev.clientY-r.top,cr};
     };
