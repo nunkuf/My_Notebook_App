@@ -1,4 +1,5 @@
 # My Notebook content actions
-# Format: ACTION<TAB>ARG1<TAB>ARG2
-# Supported initially: ADD_PROJECT, RENAME_PROJECT, DELETE_PROJECT, ADD_DOCUMENT, REMOVE_DOCUMENT
-REMOVE_DOCUMENT	מחברת חשמל	Nati/ואולי copy.docx
+# First non-comment line: VERSION<TAB>number
+# Following lines: ACTION<TAB>ARG1<TAB>ARG2
+# Supported: ADD_PROJECT, RENAME_PROJECT, DELETE_PROJECT, ADD_DOCUMENT, REMOVE_DOCUMENT
+VERSION	1
