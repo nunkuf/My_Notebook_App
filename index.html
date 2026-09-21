@@ -33,15 +33,16 @@ button,input{font:inherit}
 .drag-handle{width:28px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--muted);user-select:none;border:1px solid var(--line);border-radius:8px;background:#faf8f4}
 .drag-handle:active{cursor:grabbing}
 .item-card{flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:white;padding:12px 14px}
+.item-card.textbox-card{background:#fbfaf7;border-color:transparent;padding:10px 8px}
 .file-link{display:block;color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
 .file-link:hover{text-decoration:underline}
 .textbox{font-weight:650;min-height:24px;outline:none}
 .task-body{display:flex;gap:9px;align-items:flex-start}.task-text{outline:none;flex:1;min-width:0}
-.item-tools{display:flex;flex-direction:column;gap:5px}
-.mini{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 8px;cursor:pointer;font-size:11px;color:var(--muted)}
-.mini:hover{background:#f4f1eb;color:var(--ink)}
+.item-tools{display:flex;flex-direction:column;gap:2px;justify-content:center}
+.mini{border:0;background:transparent;padding:2px 5px;cursor:pointer;font-size:16px;line-height:1;color:var(--muted);opacity:.48}
+.mini:hover{opacity:.9;color:var(--ink)}
 .drag-over{outline:2px solid #aaa}
-.note-canvas{position:relative;min-height:520px;border:1px dashed var(--line);border-radius:12px;background:#fbfaf7;overflow:hidden}
+.note-canvas{position:relative;min-height:620px;border:1px dashed var(--line);border-radius:12px;background:#fbfaf7;overflow:visible}
 .canvas-label{position:absolute;top:10px;right:12px;font-size:11px;color:#aaa;pointer-events:none}
 .sticky{position:absolute;width:220px;min-height:135px;background:var(--note);border:1px solid #dfce7d;border-radius:5px;box-shadow:0 3px 10px rgba(0,0,0,.08);display:flex;flex-direction:column}
 .sticky-head{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 7px;cursor:grab;border-bottom:1px solid rgba(0,0,0,.08);user-select:none}
@@ -194,7 +195,7 @@ function renderLinear(){
       ids.splice(a,1);ids.splice(b,0,from);sendEvent({op:"order",project:p,section:s,order:ids});
     });
     const handle=document.createElement("div");handle.className="drag-handle";handle.textContent="⋮⋮";
-    const card=document.createElement("div");card.className="item-card";
+    const card=document.createElement("div");card.className="item-card"+(e.kind==="textbox"?" textbox-card":"");
     if(e.kind==="file"){
       const a=document.createElement("a");a.className="file-link";a.href=notebookURL(e.path);a.textContent=e.name;card.appendChild(a);
     }else if(e.kind==="textbox"){
@@ -209,13 +210,13 @@ function renderLinear(){
       wrap.append(c,d);card.appendChild(wrap);
     }
     const tools=document.createElement("div");tools.className="item-tools";
-    const gap=document.createElement("button");gap.className="mini";gap.textContent="רווח";gap.title="שנה את הרווח לפני הפריט";
-    gap.onclick=()=>{const old=sec.gaps[e.id]||0;const next=old===0?24:old===24?48:0;sendEvent({op:"gap",project:p,section:s,id:e.id,gap:next})};
+    const gap=document.createElement("button");gap.className="mini";gap.textContent="↕";gap.title="שנה את הרווח לפני הפריט";
+    gap.onclick=()=>{const old=sec.gaps[e.id]||0;const next=old===0?32:old===32?64:0;sendEvent({op:"gap",project:p,section:s,id:e.id,gap:next})};
     tools.appendChild(gap);
     if(e.kind==="file"){
-      const del=document.createElement("button");del.className="mini";del.textContent="הסר";del.onclick=()=>{window.location.href=removeURL(e.path)};tools.appendChild(del);
+      const del=document.createElement("button");del.className="mini";del.textContent="×";del.title="הסר מהקלסר";del.onclick=()=>{window.location.href=removeURL(e.path)};tools.appendChild(del);
     }else{
-      const del=document.createElement("button");del.className="mini";del.textContent="מחק";del.onclick=()=>{if(confirm("למחוק את הפריט?"))sendEvent({op:"delete",project:p,section:s,id:e.id})};tools.appendChild(del);
+      const del=document.createElement("button");del.className="mini";del.textContent="×";del.title="מחק";del.onclick=()=>{if(confirm("למחוק את הפריט?"))sendEvent({op:"delete",project:p,section:s,id:e.id})};tools.appendChild(del);
     }
     row.append(handle,card,tools);host.appendChild(row);
   });
@@ -235,32 +236,59 @@ function addNote(){
   sendEvent({op:"upsert",project:p,section:s,kind:"note",id,data:{text,x:.06,y:.08}});
 }
 
+function canvasBaseHeight(){
+  const list=document.getElementById("orderedList");
+  return Math.max(620,(list?.scrollHeight||0)+80);
+}
+function growCanvasTo(canvas,bottom){
+  const target=Math.max(canvasBaseHeight(),bottom+100);
+  if(target>canvas.offsetHeight)canvas.style.height=target+"px";
+}
+function notePosition(n,canvas){
+  let x=Number(n.x)||0,y=Number(n.y)||0;
+  // תאימות לפתקים שנשמרו בגרסה הקודמת באחוזים יחסיים.
+  if(x>=0&&x<=1&&y>=0&&y<=1){
+    x=x*Math.max(1,canvas.clientWidth-220);
+    y=y*Math.max(1,canvasBaseHeight()-135);
+  }
+  return {x,y};
+}
 function renderNotes(){
   const canvas=document.getElementById("noteCanvas");
   canvas.querySelectorAll(".sticky").forEach(x=>x.remove());
+  canvas.style.height=canvasBaseHeight()+"px";
   notes().forEach(n=>{
     const el=document.createElement("div");el.className="sticky";
-    const maxX=Math.max(1,canvas.clientWidth-220),maxY=Math.max(1,canvas.clientHeight-135);
-    el.style.left=Math.round((Number(n.x)||0)*maxX)+"px";el.style.top=Math.round((Number(n.y)||0)*maxY)+"px";
+    const pos=notePosition(n,canvas);
+    const maxX=Math.max(1,canvas.clientWidth-220);
+    const startX=Math.max(0,Math.min(maxX,pos.x)),startY=Math.max(0,pos.y);
+    el.style.left=Math.round(startX)+"px";el.style.top=Math.round(startY)+"px";
+    growCanvasTo(canvas,startY+135);
     const head=document.createElement("div");head.className="sticky-head";head.innerHTML="<span>פתק</span>";
-    const del=document.createElement("button");del.className="sticky-delete";del.textContent="מחק";
-    del.onclick=ev=>{ev.stopPropagation();if(confirm("למחוק את הפתק?"))sendEvent({op:"delete",project:p,section:s,id:n.id})};
+    const del=document.createElement("button");del.className="sticky-delete";del.textContent="×";del.title="מחק פתק";
+    let deleting=false;
+    del.onpointerdown=ev=>{ev.preventDefault();ev.stopPropagation();};
+    del.onclick=ev=>{ev.preventDefault();ev.stopPropagation();deleting=true;if(confirm("למחוק את הפתק?"))sendEvent({op:"delete",project:p,section:s,id:n.id});else deleting=false;};
     head.appendChild(del);
     const body=document.createElement("div");body.className="sticky-body";body.contentEditable="true";body.textContent=n.text||"";
-    body.onblur=()=>sendEvent({op:"upsert",project:p,section:s,kind:"note",id:n.id,data:{text:body.textContent,x:Number(n.x)||0,y:Number(n.y)||0}});
+    body.onblur=()=>{if(!deleting)sendEvent({op:"upsert",project:p,section:s,kind:"note",id:n.id,data:{text:body.textContent,x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0}})};
     let drag=null;
     head.onpointerdown=ev=>{
+      if(ev.target===del)return;
       ev.preventDefault();head.setPointerCapture(ev.pointerId);
       const r=el.getBoundingClientRect(),cr=canvas.getBoundingClientRect();drag={dx:ev.clientX-r.left,dy:ev.clientY-r.top,cr};
     };
     head.onpointermove=ev=>{
-      if(!drag)return;const maxX=Math.max(1,canvas.clientWidth-el.offsetWidth),maxY=Math.max(1,canvas.clientHeight-el.offsetHeight);
+      if(!drag)return;
+      const maxX=Math.max(1,canvas.clientWidth-el.offsetWidth);
       let x=ev.clientX-drag.cr.left-drag.dx,y=ev.clientY-drag.cr.top-drag.dy;
-      x=Math.max(0,Math.min(maxX,x));y=Math.max(0,Math.min(maxY,y));el.style.left=x+"px";el.style.top=y+"px";
+      x=Math.max(0,Math.min(maxX,x));y=Math.max(0,y);
+      el.style.left=x+"px";el.style.top=y+"px";
+      growCanvasTo(canvas,y+el.offsetHeight);
     };
     head.onpointerup=ev=>{
-      if(!drag)return;const maxX=Math.max(1,canvas.clientWidth-el.offsetWidth),maxY=Math.max(1,canvas.clientHeight-el.offsetHeight);
-      const x=parseFloat(el.style.left||0)/maxX,y=parseFloat(el.style.top||0)/maxY;drag=null;
+      if(!drag)return;
+      const x=parseFloat(el.style.left)||0,y=parseFloat(el.style.top)||0;drag=null;
       sendEvent({op:"upsert",project:p,section:s,kind:"note",id:n.id,data:{text:body.textContent,x,y}});
     };
     el.append(head,body);canvas.appendChild(el);
