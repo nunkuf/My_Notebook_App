@@ -13,7 +13,7 @@
 .side button.active{background:#ece8e1;font-weight:650}.content{padding:34px 40px}.content h2{margin:0 0 6px;font-size:24px}.sub{color:var(--muted);margin-bottom:28px}
 .panel{display:none}.panel.active{display:block}.empty{border:1px dashed var(--line);border-radius:10px;padding:34px;text-align:center;color:var(--muted);margin-top:18px}
 .action{border:1px solid var(--line);background:white;padding:8px 12px;border-radius:7px;cursor:pointer;margin-top:18px}.task{display:flex;gap:9px;margin:10px 0}
-.file-link{display:block;padding:13px 15px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);text-decoration:none;margin:8px 0}.file-link:hover{background:#f4f1eb}
+.file-row{display:flex;align-items:stretch;gap:7px;margin:8px 0}.file-link{display:block;flex:1;padding:13px 15px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);text-decoration:none}.file-link:hover{background:#f4f1eb}.remove-file{border:1px solid var(--line);background:#fff;padding:0 12px;border-radius:9px;cursor:pointer;color:var(--muted);font-size:13px}.remove-file:hover{background:#f4f1eb;color:var(--ink)}
 textarea{width:100%;min-height:220px;border:1px solid var(--line);border-radius:9px;padding:14px;font:inherit;resize:vertical}
 </style>
 <script src="data.js"></script>
@@ -34,6 +34,7 @@ const key=x=>"pn."+p+"."+x;
 function data(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
 function allWritingFiles(){return (window.notebookData?.writingFiles?.[p]||[])}
 function notebookURL(path){return "mynotebook://open?path="+encodeURI(path)}
+function removeURL(path){return "mynotebook://remove?project="+encodeURIComponent(p)+"&path="+encodeURIComponent(path)}
 function render(){
  let a=document.getElementById("projects");a.innerHTML="";
  projects.forEach(x=>{let b=document.createElement("button");b.className="tab"+(x===p?" active":"");b.textContent=x;b.onclick=()=>{p=x;localStorage.setItem("pn.p",p);render()};a.appendChild(b)});
@@ -41,7 +42,7 @@ function render(){
  sections.forEach(([id,n])=>{let b=document.createElement("button");b.className=id===s?"active":"";b.textContent=n;b.onclick=()=>{s=id;localStorage.setItem("pn.s",s);render()};q.appendChild(b)});
  document.getElementById("title").textContent=p;document.getElementById("subtitle").textContent=sections.find(x=>x[0]===s)[1];
  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(s).classList.add("active");
- let wl=document.getElementById("writingLinks"),wf=allWritingFiles();wl.innerHTML="";wf.forEach(f=>{let a=document.createElement("a");a.className="file-link";a.href=notebookURL(f.path);a.textContent=f.name;wl.appendChild(a)});document.getElementById("writingEmpty").style.display=wf.length?"none":"block";
+ let wl=document.getElementById("writingLinks"),wf=allWritingFiles();wl.innerHTML="";wf.forEach(f=>{let row=document.createElement("div");row.className="file-row";let a=document.createElement("a");a.className="file-link";a.href=notebookURL(f.path);a.textContent=f.name;let r=document.createElement("button");r.className="remove-file";r.type="button";r.textContent="הסר";r.onclick=()=>{window.location.href=removeURL(f.path)};row.append(a,r);wl.appendChild(row)});document.getElementById("writingEmpty").style.display=wf.length?"none":"block";
  let tasks=data(key("tasks"),[]),tl=document.getElementById("taskList");tl.innerHTML=tasks.length?"":'<div class="empty">אין משימות פתוחות.</div>';
  tasks.forEach((t,i)=>{let d=document.createElement("div");d.className="task";let c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.onchange=()=>{tasks[i].done=c.checked;localStorage.setItem(key("tasks"),JSON.stringify(tasks))};let z=document.createElement("span");z.textContent=t.text;d.append(c,z);tl.appendChild(d)});
  let n=document.getElementById("notesBox");n.value=localStorage.getItem(key("notes"))||"";n.oninput=()=>localStorage.setItem(key("notes"),n.value);
