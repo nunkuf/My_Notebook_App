@@ -1,54 +1,272 @@
 <!doctype html>
-<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>מחברת פרויקטים</title>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>הקלסר שלי</title>
 <style>
-:root{--bg:#f4f2ed;--paper:#fffdf9;--ink:#242321;--muted:#77736c;--line:#d9d4cb;--tab:#e7e3dc}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-.app{max-width:1180px;margin:28px auto;padding:0 22px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.topbar h1{font-size:25px;margin:0}.update-button{border:1px solid var(--line);background:var(--paper);padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--ink);text-decoration:none;display:inline-block}
-.tabs{display:flex;gap:5px;align-items:flex-end;border-bottom:1px solid var(--line);padding:0 8px}
-.tab{border:1px solid var(--line);border-bottom:0;background:var(--tab);padding:11px 17px;border-radius:9px 9px 0 0;cursor:pointer}
-.tab.active{background:var(--paper);position:relative;top:1px;font-weight:650;padding-top:13px}
-.workspace{background:var(--paper);min-height:620px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;display:grid;grid-template-columns:185px 1fr}
-.side{border-left:1px solid var(--line);padding:22px 13px}.side button{width:100%;text-align:right;border:0;background:transparent;padding:10px 12px;border-radius:7px;cursor:pointer;font-size:14px}
-.side button.active{background:#ece8e1;font-weight:650}.content{padding:34px 40px}.content h2{margin:0 0 6px;font-size:24px}.sub{color:var(--muted);margin-bottom:28px}
-.panel{display:none}.panel.active{display:block}.empty{border:1px dashed var(--line);border-radius:10px;padding:34px;text-align:center;color:var(--muted);margin-top:18px}
-.action{border:1px solid var(--line);background:white;padding:8px 12px;border-radius:7px;cursor:pointer;margin-top:18px}.task{display:flex;gap:9px;margin:10px 0}
-.file-row{display:flex;align-items:stretch;gap:7px;margin:8px 0}.file-link{display:block;flex:1;padding:13px 15px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);text-decoration:none}.file-link:hover{background:#f4f1eb}.remove-file{border:1px solid var(--line);background:#fff;padding:0 12px;border-radius:9px;cursor:pointer;color:var(--muted);font-size:13px}.remove-file:hover{background:#f4f1eb;color:var(--ink)}
-textarea{width:100%;min-height:220px;border:1px solid var(--line);border-radius:9px;padding:14px;font:inherit;resize:vertical}
+:root{--bg:#f4f2ed;--paper:#fffdf9;--ink:#242321;--muted:#77736c;--line:#d9d4cb;--tab:#e7e3dc;--soft:#ece8e1;--note:#fff3b8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input{font:inherit}
+.app{max-width:1440px;margin:24px auto;padding:0 22px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.topbar h1{font-size:25px;margin:0}
+.update-button,.tool-button{border:1px solid var(--line);background:var(--paper);padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--ink);text-decoration:none;display:inline-block}
+.shell{display:grid;grid-template-columns:minmax(0,1fr) 230px;grid-template-areas:"main projects";min-height:720px}
+.projects{grid-area:projects;background:var(--paper);border:1px solid var(--line);border-right:0;border-radius:0 12px 12px 0;padding:14px 10px;overflow:auto}
+.projects-title{font-size:12px;color:var(--muted);padding:4px 8px 10px}
+.project-tab{width:100%;text-align:right;border:0;background:transparent;padding:11px 12px;border-radius:8px;cursor:pointer;margin:2px 0;color:var(--ink)}
+.project-tab:hover{background:#f4f1eb}.project-tab.active{background:var(--soft);font-weight:650}
+.main{grid-area:main;background:var(--paper);border:1px solid var(--line);border-radius:12px 0 0 12px;min-width:0}
+.project-header{padding:24px 28px 0}.project-header h2{margin:0 0 15px;font-size:24px}
+.section-tabs{display:flex;gap:5px;border-bottom:1px solid var(--line);padding:0 6px}
+.section-tab{border:1px solid var(--line);border-bottom:0;background:var(--tab);padding:10px 17px;border-radius:9px 9px 0 0;cursor:pointer}
+.section-tab.active{background:var(--paper);position:relative;top:1px;font-weight:650}
+.section{padding:24px 28px 34px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tool-button:hover{background:#f4f1eb}
+.section-grid{display:grid;grid-template-columns:minmax(320px,56%) minmax(280px,44%);gap:22px;align-items:start}
+.ordered-column{min-height:520px}
+.list-empty{border:1px dashed var(--line);border-radius:10px;padding:30px;text-align:center;color:var(--muted)}
+.ordered-item{display:flex;align-items:stretch;gap:7px;margin:7px 0}
+.drag-handle{width:28px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--muted);user-select:none;border:1px solid var(--line);border-radius:8px;background:#faf8f4}
+.drag-handle:active{cursor:grabbing}
+.item-card{flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:white;padding:12px 14px}
+.file-link{display:block;color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
+.file-link:hover{text-decoration:underline}
+.textbox{font-weight:650;min-height:24px;outline:none}
+.task-body{display:flex;gap:9px;align-items:flex-start}.task-text{outline:none;flex:1;min-width:0}
+.item-tools{display:flex;flex-direction:column;gap:5px}
+.mini{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 8px;cursor:pointer;font-size:11px;color:var(--muted)}
+.mini:hover{background:#f4f1eb;color:var(--ink)}
+.drag-over{outline:2px solid #aaa}
+.note-canvas{position:relative;min-height:520px;border:1px dashed var(--line);border-radius:12px;background:#fbfaf7;overflow:hidden}
+.canvas-label{position:absolute;top:10px;right:12px;font-size:11px;color:#aaa;pointer-events:none}
+.sticky{position:absolute;width:220px;min-height:135px;background:var(--note);border:1px solid #dfce7d;border-radius:5px;box-shadow:0 3px 10px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.sticky-head{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 7px;cursor:grab;border-bottom:1px solid rgba(0,0,0,.08);user-select:none}
+.sticky-head:active{cursor:grabbing}
+.sticky-body{padding:11px;min-height:100px;outline:none;white-space:pre-wrap;overflow-wrap:anywhere;flex:1}
+.sticky-delete{border:0;background:transparent;cursor:pointer;color:#716735;font-size:12px}
+.hidden{display:none!important}
+@media(max-width:900px){.shell{grid-template-columns:1fr;grid-template-areas:"projects" "main"}.projects{border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;display:flex;gap:5px;overflow:auto}.projects-title{display:none}.project-tab{width:auto;white-space:nowrap}.main{border-radius:0 0 12px 12px}.section-grid{grid-template-columns:1fr}.note-canvas{min-height:420px}}
 </style>
 <script src="data.js"></script>
-</head><body><div class="app"><div class="topbar"><h1>הקלסר שלי</h1><a class="update-button" href="mynotebook://update">רענן ועדכן</a></div><div class="tabs" id="projects"></div>
-<div class="workspace"><aside class="side" id="sections"></aside><main class="content"><h2 id="title"></h2><div class="sub" id="subtitle"></div>
-<section id="writing" class="panel"><div id="writingLinks"></div><div id="writingEmpty" class="empty">עדיין אין מסמכי כתיבה בפרויקט.</div><button class="action" onclick="addDocument()">＋ הוסף קובץ</button></section>
-<section id="sources" class="panel"><div class="empty">עדיין אין מקורות בפרויקט.</div><button class="action" onclick="future()">＋ הוסף מקור</button></section>
-<section id="tasks" class="panel"><div id="taskList"></div><button class="action" onclick="addTask()">＋ משימה חדשה</button></section>
-<section id="notes" class="panel"><textarea id="notesBox" placeholder="הערות קצרות לפרויקט..."></textarea></section>
-</main></div></div>
+</head>
+<body>
+<div class="app">
+  <div class="topbar"><h1>הקלסר שלי</h1><a class="update-button" href="mynotebook://update">רענן ועדכן</a></div>
+  <div class="shell">
+    <aside class="projects"><div class="projects-title">פרויקטים</div><div id="projectList"></div></aside>
+    <main class="main">
+      <div class="project-header"><h2 id="projectTitle"></h2><div class="section-tabs" id="sectionTabs"></div></div>
+      <div class="section">
+        <div class="toolbar" id="toolbar"></div>
+        <div class="section-grid">
+          <div class="ordered-column"><div id="orderedList"></div></div>
+          <div class="note-canvas" id="noteCanvas"><div class="canvas-label">פתקים</div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
 <script>
 const projects=window.notebookData?.projects||[];
-const sections=[["writing","כתיבה"],["sources","מקורות"],["tasks","משימות"],["notes","הערות"]];
-let p=localStorage.getItem("pn.p");
-if(!projects.includes(p))p=projects[0]||"";
-let s=localStorage.getItem("pn.s")||"writing";
-const key=x=>"pn."+p+"."+x;
-function data(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
-function allWritingFiles(){return (window.notebookData?.writingFiles?.[p]||[])}
+const writingFiles=window.notebookData?.writingFiles||{};
+const sections=[["writing","כתיבה"],["sources","מקורות"],["notes","הערות"],["tasks","משימות"]];
+let p=localStorage.getItem("pn.p"); if(!projects.includes(p)) p=projects[0]||"";
+let s=localStorage.getItem("pn.s")||"writing"; if(!sections.some(x=>x[0]===s)) s="writing";
+
+function clone(x){try{return structuredClone(x)}catch{return JSON.parse(JSON.stringify(x||{}))}}
+let layout=clone(window.notebookData?.layout||{projects:{}});
+if(!layout.projects) layout.projects={};
+
+function ensureProject(name){
+  if(!layout.projects[name]) layout.projects[name]={sections:{}};
+  if(!layout.projects[name].sections) layout.projects[name].sections={};
+  return layout.projects[name];
+}
+function ensureSection(project,section){
+  const pr=ensureProject(project);
+  if(!pr.sections[section]) pr.sections[section]={entities:{},order:[],gaps:{}};
+  const z=pr.sections[section];
+  if(!z.entities) z.entities={}; if(!z.order) z.order=[]; if(!z.gaps) z.gaps={};
+  return z;
+}
+function applyEvent(ev){
+  if(!ev||!ev.op)return;
+  if(ev.op==="project_rename"){
+    if(layout.projects[ev.old]){
+      layout.projects[ev.new]=layout.projects[ev.old];
+      delete layout.projects[ev.old];
+    }
+    return;
+  }
+  if(ev.op==="project_delete"){delete layout.projects[ev.project];return}
+  if(!ev.project||!ev.section)return;
+  const sec=ensureSection(ev.project,ev.section);
+  if(ev.op==="upsert"){
+    sec.entities[ev.id]=Object.assign({},sec.entities[ev.id]||{}, {kind:ev.kind}, ev.data||{});
+    if(ev.kind!=="note"&&!sec.order.includes(ev.id))sec.order.push(ev.id);
+  }else if(ev.op==="delete"){
+    delete sec.entities[ev.id];
+    sec.order=sec.order.filter(x=>x!==ev.id);
+    delete sec.gaps[ev.id];
+  }else if(ev.op==="order"){
+    sec.order=Array.isArray(ev.order)?ev.order.slice():sec.order;
+  }else if(ev.op==="gap"){
+    sec.gaps[ev.id]=Number(ev.gap)||0;
+  }
+}
+(window.notebookData?.layoutEvents||[]).forEach(applyEvent);
+
+function eventURL(ev){return "mynotebook://layout-action?data="+encodeURIComponent(JSON.stringify(ev))}
+function sendEvent(ev){
+  applyEvent(ev);
+  render();
+  window.location.href=eventURL(ev);
+}
+function uid(prefix){return prefix+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8)}
 function notebookURL(path){return "mynotebook://open?path="+encodeURI(path)}
 function removeURL(path){return "mynotebook://remove?project="+encodeURIComponent(p)+"&path="+encodeURIComponent(path)}
-function render(){
- let a=document.getElementById("projects");a.innerHTML="";
- projects.forEach(x=>{let b=document.createElement("button");b.className="tab"+(x===p?" active":"");b.textContent=x;b.onclick=()=>{p=x;localStorage.setItem("pn.p",p);render()};a.appendChild(b)});
- let q=document.getElementById("sections");q.innerHTML="";
- sections.forEach(([id,n])=>{let b=document.createElement("button");b.className=id===s?"active":"";b.textContent=n;b.onclick=()=>{s=id;localStorage.setItem("pn.s",s);render()};q.appendChild(b)});
- document.getElementById("title").textContent=p;document.getElementById("subtitle").textContent=sections.find(x=>x[0]===s)[1];
- document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(s).classList.add("active");
- let wl=document.getElementById("writingLinks"),wf=allWritingFiles();wl.innerHTML="";wf.forEach(f=>{let row=document.createElement("div");row.className="file-row";let a=document.createElement("a");a.className="file-link";a.href=notebookURL(f.path);a.textContent=f.name;let r=document.createElement("button");r.className="remove-file";r.type="button";r.textContent="הסר";r.onclick=()=>{window.location.href=removeURL(f.path)};row.append(a,r);wl.appendChild(row)});document.getElementById("writingEmpty").style.display=wf.length?"none":"block";
- let tasks=data(key("tasks"),[]),tl=document.getElementById("taskList");tl.innerHTML=tasks.length?"":'<div class="empty">אין משימות פתוחות.</div>';
- tasks.forEach((t,i)=>{let d=document.createElement("div");d.className="task";let c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.onchange=()=>{tasks[i].done=c.checked;localStorage.setItem(key("tasks"),JSON.stringify(tasks))};let z=document.createElement("span");z.textContent=t.text;d.append(c,z);tl.appendChild(d)});
- let n=document.getElementById("notesBox");n.value=localStorage.getItem(key("notes"))||"";n.oninput=()=>localStorage.setItem(key("notes"),n.value);
+function fileId(path){return "file:"+path}
+
+function currentSec(){return ensureSection(p,s)}
+function linearEntries(){
+  const sec=currentSec(), map={};
+  if(s==="writing"){
+    (writingFiles[p]||[]).forEach(f=>map[fileId(f.path)]={id:fileId(f.path),kind:"file",name:f.name,path:f.path});
+  }
+  Object.entries(sec.entities).forEach(([id,e])=>{
+    if(e.kind!=="note"){
+      if(s==="tasks"&&(e.kind==="task"||e.kind==="textbox")) map[id]=Object.assign({id},e);
+      else if(s!=="tasks"&&e.kind==="textbox") map[id]=Object.assign({id},e);
+    }
+  });
+  const ordered=[];
+  sec.order.forEach(id=>{if(map[id]){ordered.push(map[id]);delete map[id]}});
+  Object.values(map).forEach(x=>ordered.push(x));
+  return ordered;
 }
-function addDocument(){window.location.href="mynotebook://choose?project="+encodeURIComponent(p)}
-function addTask(){let t=prompt("מה המשימה?");if(!t)return;let a=data(key("tasks"),[]);a.push({text:t,done:false});localStorage.setItem(key("tasks"),JSON.stringify(a));render()}
-function future(){alert("האפשרות הזו תחובר בהמשך.")}
+function notes(){const sec=currentSec();return Object.entries(sec.entities).filter(([,e])=>e.kind==="note").map(([id,e])=>Object.assign({id},e))}
+
+function render(){
+  const pl=document.getElementById("projectList");pl.innerHTML="";
+  projects.forEach(name=>{
+    const b=document.createElement("button");b.className="project-tab"+(name===p?" active":"");b.textContent=name;
+    b.onclick=()=>{p=name;localStorage.setItem("pn.p",p);render()};pl.appendChild(b);
+  });
+  document.getElementById("projectTitle").textContent=p||"";
+  const st=document.getElementById("sectionTabs");st.innerHTML="";
+  sections.forEach(([id,label])=>{
+    const b=document.createElement("button");b.className="section-tab"+(id===s?" active":"");b.textContent=label;
+    b.onclick=()=>{s=id;localStorage.setItem("pn.s",s);render()};st.appendChild(b);
+  });
+  renderToolbar(); renderLinear(); renderNotes();
+}
+
+function tool(label,fn){
+  const b=document.createElement("button");b.className="tool-button";b.textContent=label;b.onclick=fn;return b;
+}
+function renderToolbar(){
+  const t=document.getElementById("toolbar");t.innerHTML="";
+  if(s==="writing")t.appendChild(tool("＋ הוסף קובץ",()=>{window.location.href="mynotebook://choose?project="+encodeURIComponent(p)}));
+  if(s==="sources")t.appendChild(tool("＋ הוסף מקור",()=>alert("הוספת מקורות תחובר בשלב הבא.")));
+  if(s==="tasks")t.appendChild(tool("＋ משימה",addTask));
+  t.appendChild(tool("＋ תיבת טקסט",addTextbox));
+  t.appendChild(tool("＋ פתק",addNote));
+}
+
+function renderLinear(){
+  const host=document.getElementById("orderedList");host.innerHTML="";
+  const entries=linearEntries(),sec=currentSec();
+  if(!entries.length){const e=document.createElement("div");e.className="list-empty";e.textContent=s==="writing"?"עדיין אין פריטים בכתיבה.":s==="sources"?"עדיין אין מקורות או תיבות טקסט.":s==="notes"?"אפשר להוסיף כאן תיבות טקסט ופתקים.":"אין משימות פתוחות.";host.appendChild(e);return}
+  entries.forEach((e,idx)=>{
+    const row=document.createElement("div");row.className="ordered-item";row.draggable=true;row.dataset.id=e.id;
+    row.style.marginTop=(7+(sec.gaps[e.id]||0))+"px";
+    row.addEventListener("dragstart",ev=>{ev.dataTransfer.setData("text/plain",e.id)});
+    row.addEventListener("dragover",ev=>{ev.preventDefault();row.classList.add("drag-over")});
+    row.addEventListener("dragleave",()=>row.classList.remove("drag-over"));
+    row.addEventListener("drop",ev=>{
+      ev.preventDefault();row.classList.remove("drag-over");
+      const from=ev.dataTransfer.getData("text/plain"); if(!from||from===e.id)return;
+      const ids=linearEntries().map(x=>x.id);const a=ids.indexOf(from),b=ids.indexOf(e.id);if(a<0||b<0)return;
+      ids.splice(a,1);ids.splice(b,0,from);sendEvent({op:"order",project:p,section:s,order:ids});
+    });
+    const handle=document.createElement("div");handle.className="drag-handle";handle.textContent="⋮⋮";
+    const card=document.createElement("div");card.className="item-card";
+    if(e.kind==="file"){
+      const a=document.createElement("a");a.className="file-link";a.href=notebookURL(e.path);a.textContent=e.name;card.appendChild(a);
+    }else if(e.kind==="textbox"){
+      const d=document.createElement("div");d.className="textbox";d.contentEditable="true";d.textContent=e.text||"כותרת חדשה";
+      d.onblur=()=>sendEvent({op:"upsert",project:p,section:s,kind:"textbox",id:e.id,data:{text:d.textContent}});
+      card.appendChild(d);
+    }else if(e.kind==="task"){
+      const wrap=document.createElement("div");wrap.className="task-body";
+      const c=document.createElement("input");c.type="checkbox";c.checked=!!e.done;c.onchange=()=>sendEvent({op:"upsert",project:p,section:s,kind:"task",id:e.id,data:{text:e.text||"",done:c.checked}});
+      const d=document.createElement("div");d.className="task-text";d.contentEditable="true";d.textContent=e.text||"";
+      d.onblur=()=>sendEvent({op:"upsert",project:p,section:s,kind:"task",id:e.id,data:{text:d.textContent,done:!!e.done}});
+      wrap.append(c,d);card.appendChild(wrap);
+    }
+    const tools=document.createElement("div");tools.className="item-tools";
+    const gap=document.createElement("button");gap.className="mini";gap.textContent="רווח";gap.title="שנה את הרווח לפני הפריט";
+    gap.onclick=()=>{const old=sec.gaps[e.id]||0;const next=old===0?24:old===24?48:0;sendEvent({op:"gap",project:p,section:s,id:e.id,gap:next})};
+    tools.appendChild(gap);
+    if(e.kind==="file"){
+      const del=document.createElement("button");del.className="mini";del.textContent="הסר";del.onclick=()=>{window.location.href=removeURL(e.path)};tools.appendChild(del);
+    }else{
+      const del=document.createElement("button");del.className="mini";del.textContent="מחק";del.onclick=()=>{if(confirm("למחוק את הפריט?"))sendEvent({op:"delete",project:p,section:s,id:e.id})};tools.appendChild(del);
+    }
+    row.append(handle,card,tools);host.appendChild(row);
+  });
+}
+
+function addTextbox(){
+  if(!p)return;const id=uid("text");
+  sendEvent({op:"upsert",project:p,section:s,kind:"textbox",id,data:{text:"כותרת חדשה"}});
+}
+function addTask(){
+  const text=prompt("מה המשימה?");if(!text)return;const id=uid("task");
+  sendEvent({op:"upsert",project:p,section:"tasks",kind:"task",id,data:{text,done:false}});
+  s="tasks";localStorage.setItem("pn.s",s);
+}
+function addNote(){
+  if(!p)return;const text=prompt("טקסט הפתק:","פתק חדש");if(text===null)return;const id=uid("note");
+  sendEvent({op:"upsert",project:p,section:s,kind:"note",id,data:{text,x:.06,y:.08}});
+}
+
+function renderNotes(){
+  const canvas=document.getElementById("noteCanvas");
+  canvas.querySelectorAll(".sticky").forEach(x=>x.remove());
+  notes().forEach(n=>{
+    const el=document.createElement("div");el.className="sticky";
+    const maxX=Math.max(1,canvas.clientWidth-220),maxY=Math.max(1,canvas.clientHeight-135);
+    el.style.left=Math.round((Number(n.x)||0)*maxX)+"px";el.style.top=Math.round((Number(n.y)||0)*maxY)+"px";
+    const head=document.createElement("div");head.className="sticky-head";head.innerHTML="<span>פתק</span>";
+    const del=document.createElement("button");del.className="sticky-delete";del.textContent="מחק";
+    del.onclick=ev=>{ev.stopPropagation();if(confirm("למחוק את הפתק?"))sendEvent({op:"delete",project:p,section:s,id:n.id})};
+    head.appendChild(del);
+    const body=document.createElement("div");body.className="sticky-body";body.contentEditable="true";body.textContent=n.text||"";
+    body.onblur=()=>sendEvent({op:"upsert",project:p,section:s,kind:"note",id:n.id,data:{text:body.textContent,x:Number(n.x)||0,y:Number(n.y)||0}});
+    let drag=null;
+    head.onpointerdown=ev=>{
+      ev.preventDefault();head.setPointerCapture(ev.pointerId);
+      const r=el.getBoundingClientRect(),cr=canvas.getBoundingClientRect();drag={dx:ev.clientX-r.left,dy:ev.clientY-r.top,cr};
+    };
+    head.onpointermove=ev=>{
+      if(!drag)return;const maxX=Math.max(1,canvas.clientWidth-el.offsetWidth),maxY=Math.max(1,canvas.clientHeight-el.offsetHeight);
+      let x=ev.clientX-drag.cr.left-drag.dx,y=ev.clientY-drag.cr.top-drag.dy;
+      x=Math.max(0,Math.min(maxX,x));y=Math.max(0,Math.min(maxY,y));el.style.left=x+"px";el.style.top=y+"px";
+    };
+    head.onpointerup=ev=>{
+      if(!drag)return;const maxX=Math.max(1,canvas.clientWidth-el.offsetWidth),maxY=Math.max(1,canvas.clientHeight-el.offsetHeight);
+      const x=parseFloat(el.style.left||0)/maxX,y=parseFloat(el.style.top||0)/maxY;drag=null;
+      sendEvent({op:"upsert",project:p,section:s,kind:"note",id:n.id,data:{text:body.textContent,x,y}});
+    };
+    el.append(head,body);canvas.appendChild(el);
+  });
+}
+window.addEventListener("resize",renderNotes);
 render();
-</script></body></html>
+</script>
+</body></html>
