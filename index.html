@@ -49,5 +49,19 @@ function render(){
 function addDocument(){window.location.href="mynotebook://choose?project="+encodeURIComponent(p)}
 function addTask(){let t=prompt("מה המשימה?");if(!t)return;let a=data(key("tasks"),[]);a.push({text:t,done:false});localStorage.setItem(key("tasks"),JSON.stringify(a));render()}
 function future(){alert("האפשרות הזו תחובר בהמשך.")}
+function updateOnRefresh(){
+ const guard="pn.updateReload";
+ if(sessionStorage.getItem(guard)==="1"){
+   sessionStorage.removeItem(guard);
+   return;
+ }
+ sessionStorage.setItem(guard,"1");
+ const frame=document.createElement("iframe");
+ frame.style.display="none";
+ frame.src="mynotebook://update";
+ document.body.appendChild(frame);
+ setTimeout(()=>location.reload(),2000);
+}
 render();
+updateOnRefresh();
 </script></body></html>
