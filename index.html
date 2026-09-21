@@ -4,7 +4,7 @@
 <style>
 :root{--bg:#f4f2ed;--paper:#fffdf9;--ink:#242321;--muted:#77736c;--line:#d9d4cb;--tab:#e7e3dc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-.app{max-width:1180px;margin:28px auto;padding:0 22px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.topbar h1{font-size:25px;margin:0}.update-button{border:1px solid var(--line);background:var(--paper);padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--ink)}
+.app{max-width:1180px;margin:28px auto;padding:0 22px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.topbar h1{font-size:25px;margin:0}.update-button{border:1px solid var(--line);background:var(--paper);padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--ink);text-decoration:none;display:inline-block}
 .tabs{display:flex;gap:5px;align-items:flex-end;border-bottom:1px solid var(--line);padding:0 8px}
 .tab{border:1px solid var(--line);border-bottom:0;background:var(--tab);padding:11px 17px;border-radius:9px 9px 0 0;cursor:pointer}
 .tab.active{background:var(--paper);position:relative;top:1px;font-weight:650;padding-top:13px}
@@ -17,7 +17,7 @@
 textarea{width:100%;min-height:220px;border:1px solid var(--line);border-radius:9px;padding:14px;font:inherit;resize:vertical}
 </style>
 <script src="data.js"></script>
-</head><body><div class="app"><div class="topbar"><h1>המחברות שלי — בדיקת עדכון</h1><button class="update-button" onclick="updateNotebook()">רענן ועדכן</button></div><div class="tabs" id="projects"></div>
+</head><body><div class="app"><div class="topbar"><h1>המחברות שלי — בדיקת עדכון</h1><a class="update-button" href="mynotebook://update">רענן ועדכן</a></div><div class="tabs" id="projects"></div>
 <div class="workspace"><aside class="side" id="sections"></aside><main class="content"><h2 id="title"></h2><div class="sub" id="subtitle"></div>
 <section id="writing" class="panel"><div id="writingLinks"></div><div id="writingEmpty" class="empty">עדיין אין מסמכי כתיבה בפרויקט.</div><button class="action" onclick="addDocument()">＋ הוסף קובץ</button></section>
 <section id="sources" class="panel"><div class="empty">עדיין אין מקורות בפרויקט.</div><button class="action" onclick="future()">＋ הוסף מקור</button></section>
@@ -49,9 +49,5 @@ function render(){
 function addDocument(){window.location.href="mynotebook://choose?project="+encodeURIComponent(p)}
 function addTask(){let t=prompt("מה המשימה?");if(!t)return;let a=data(key("tasks"),[]);a.push({text:t,done:false});localStorage.setItem(key("tasks"),JSON.stringify(a));render()}
 function future(){alert("האפשרות הזו תחובר בהמשך.")}
-function updateNotebook(){
- window.location.href="mynotebook://update";
- setTimeout(()=>location.reload(),2500);
-}
 render();
 </script></body></html>
