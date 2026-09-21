@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מחברת פרויקטים</title>
+<style>
+:root{--bg:#f4f2ed;--paper:#fffdf9;--ink:#242321;--muted:#77736c;--line:#d9d4cb;--tab:#e7e3dc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.app{max-width:1180px;margin:28px auto;padding:0 22px}h1{font-size:25px;margin:0 0 18px}
+.tabs{display:flex;gap:5px;align-items:flex-end;border-bottom:1px solid var(--line);padding:0 8px}
+.tab{border:1px solid var(--line);border-bottom:0;background:var(--tab);padding:11px 17px;border-radius:9px 9px 0 0;cursor:pointer}
+.tab.active{background:var(--paper);position:relative;top:1px;font-weight:650;padding-top:13px}
+.workspace{background:var(--paper);min-height:620px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;display:grid;grid-template-columns:185px 1fr}
+.side{border-left:1px solid var(--line);padding:22px 13px}.side button{width:100%;text-align:right;border:0;background:transparent;padding:10px 12px;border-radius:7px;cursor:pointer;font-size:14px}
+.side button.active{background:#ece8e1;font-weight:650}.content{padding:34px 40px}.content h2{margin:0 0 6px;font-size:24px}.sub{color:var(--muted);margin-bottom:28px}
+.panel{display:none}.panel.active{display:block}.empty{border:1px dashed var(--line);border-radius:10px;padding:34px;text-align:center;color:var(--muted);margin-top:18px}
+.action{border:1px solid var(--line);background:white;padding:8px 12px;border-radius:7px;cursor:pointer;margin-top:18px}.task{display:flex;gap:9px;margin:10px 0}
+.file-link{display:block;padding:13px 15px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);text-decoration:none;margin:8px 0}.file-link:hover{background:#f4f1eb}
+textarea{width:100%;min-height:220px;border:1px solid var(--line);border-radius:9px;padding:14px;font:inherit;resize:vertical}
+</style>
+<script src="data.js"></script>
+</head><body><div class="app"><h1>המחברות שלי</h1><div class="tabs" id="projects"></div>
+<div class="workspace"><aside class="side" id="sections"></aside><main class="content"><h2 id="title"></h2><div class="sub" id="subtitle"></div>
+<section id="writing" class="panel"><div id="writingLinks"></div><div id="writingEmpty" class="empty">עדיין אין מסמכי כתיבה בפרויקט.</div><button class="action" onclick="addDocument()">＋ הוסף מסמך</button></section>
+<section id="sources" class="panel"><div class="empty">עדיין אין מקורות בפרויקט.</div><button class="action" onclick="future()">＋ הוסף מקור</button></section>
+<section id="tasks" class="panel"><div id="taskList"></div><button class="action" onclick="addTask()">＋ משימה</button></section>
+<section id="notes" class="panel"><textarea id="notesBox" placeholder="הערות קצרות לפרויקט..."></textarea></section>
+</main></div></div>
+<script>
+const projects=window.notebookData?.projects||[];
+const sections=[["writing","כתיבה"],["sources","מקורות"],["tasks","משימות"],["notes","הערות"]];
+let p=localStorage.getItem("pn.p");
+if(!projects.includes(p))p=projects[0]||"";
+let s=localStorage.getItem("pn.s")||"writing";
+const key=x=>"pn."+p+"."+x;
+function data(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+function allWritingFiles(){return (window.notebookData?.writingFiles?.[p]||[])}
+function notebookURL(path){return "mynotebook://open?path="+encodeURI(path)}
+function render(){
+ let a=document.getElementById("projects");a.innerHTML="";
+ projects.forEach(x=>{let b=document.createElement("button");b.className="tab"+(x===p?" active":"");b.textContent=x;b.onclick=()=>{p=x;localStorage.setItem("pn.p",p);render()};a.appendChild(b)});
+ let q=document.getElementById("sections");q.innerHTML="";
+ sections.forEach(([id,n])=>{let b=document.createElement("button");b.className=id===s?"active":"";b.textContent=n;b.onclick=()=>{s=id;localStorage.setItem("pn.s",s);render()};q.appendChild(b)});
+ document.getElementById("title").textContent=p;document.getElementById("subtitle").textContent=sections.find(x=>x[0]===s)[1];
+ document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(s).classList.add("active");
+ let wl=document.getElementById("writingLinks"),wf=allWritingFiles();wl.innerHTML="";wf.forEach(f=>{let a=document.createElement("a");a.className="file-link";a.href=notebookURL(f.path);a.textContent=f.name;wl.appendChild(a)});document.getElementById("writingEmpty").style.display=wf.length?"none":"block";
+ let tasks=data(key("tasks"),[]),tl=document.getElementById("taskList");tl.innerHTML=tasks.length?"":'<div class="empty">אין משימות פתוחות.</div>';
+ tasks.forEach((t,i)=>{let d=document.createElement("div");d.className="task";let c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.onchange=()=>{tasks[i].done=c.checked;localStorage.setItem(key("tasks"),JSON.stringify(tasks))};let z=document.createElement("span");z.textContent=t.text;d.append(c,z);tl.appendChild(d)});
+ let n=document.getElementById("notesBox");n.value=localStorage.getItem(key("notes"))||"";n.oninput=()=>localStorage.setItem(key("notes"),n.value);
+}
+function addDocument(){window.location.href="mynotebook://choose?project="+encodeURIComponent(p)}
+function addTask(){let t=prompt("מה המשימה?");if(!t)return;let a=data(key("tasks"),[]);a.push({text:t,done:false});localStorage.setItem(key("tasks"),JSON.stringify(a));render()}
+function future(){alert("האפשרות הזו תחובר בהמשך.")}
+render();
+</script></body></html>
