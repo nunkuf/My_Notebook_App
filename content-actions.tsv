@@ -1,4 +1,4 @@
 # My Notebook content actions
 # Format: ACTION<TAB>ARG1<TAB>ARG2
 # Supported initially: ADD_PROJECT, RENAME_PROJECT, DELETE_PROJECT, ADD_DOCUMENT, REMOVE_DOCUMENT
-ADD_DOCUMENT	מחברת חשמל	Nati/ואולי copy.docx
+REMOVE_DOCUMENT	מחברת חשמל	Nati/ואולי copy.docx
