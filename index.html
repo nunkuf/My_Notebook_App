@@ -179,8 +179,7 @@ function tool(label,fn){
 }
 function renderToolbar(){
   const t=document.getElementById("toolbar");t.innerHTML="";
-  if(s==="writing")t.appendChild(tool("＋ הוסף קובץ",()=>{window.location.href="mynotebook://choose?project="+encodeURIComponent(p)}));
-  if(s==="sources")t.appendChild(tool("＋ הוסף מקור",()=>alert("הוספת מקורות תחובר בשלב הבא.")));
+  if(s==="writing"||s==="sources")t.appendChild(tool("＋ הוסף קובץ",()=>{window.location.href="mynotebook://choose?project="+encodeURIComponent(p)}));
   if(s==="tasks")t.appendChild(tool("＋ משימה",addTask));
   t.appendChild(tool("＋ תיבת טקסט",addTextbox));
   t.appendChild(tool("＋ פתק",addNote));
