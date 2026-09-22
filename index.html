@@ -249,7 +249,6 @@ function addTask(){
 }
 function addNote(){
   if(!p)return;
-  const text=prompt("טקסט הפתק:","פתק חדש");if(text===null)return;
   const id=uid("note");
   const canvas=document.getElementById("noteCanvas");
   const r=canvas.getBoundingClientRect();
@@ -261,7 +260,7 @@ function addNote(){
   x=Math.max(0,Math.min(Math.max(0,canvas.clientWidth-noteW),x));
   y=Math.max(0,y);
   growCanvasTo(canvas,y+noteH);
-  sendEvent({op:"upsert",project:p,section:s,kind:"note",id,data:{text,x,y,color:"yellow"}});
+  sendEvent({op:"upsert",project:p,section:s,kind:"note",id,data:{text:"",x,y,color:"yellow"}});
 }
 
 function canvasBaseHeight(){
