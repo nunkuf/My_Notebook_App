@@ -24,12 +24,12 @@ button,input{font:inherit}
 .section-tab{border:1px solid var(--line);border-bottom:0;background:var(--tab);padding:10px 17px;border-radius:9px 9px 0 0;cursor:pointer}
 .section-tab.active{background:var(--paper);position:relative;top:1px;font-weight:650}
 .section{position:relative;padding:24px 28px 34px;min-height:700px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;position:relative;z-index:2}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;position:sticky;top:0;z-index:20;background:var(--paper);padding:8px 0}
 .tool-button:hover{background:#f4f1eb}
 .ordered-column{min-height:520px;position:relative;z-index:1}
 .file-pair{flex:1;min-width:0;display:flex;align-items:stretch;border-radius:9px;overflow:hidden;background:white}
 .file-main{flex:.8;min-width:0;padding:12px 14px}
-.file-description{flex:1.2;min-width:260px;padding:10px 12px;font-size:12px;line-height:1.45;color:#66615b;outline:none;border-right:1px solid #f0ede7;background:white}
+.file-description{flex:1.2;min-width:260px;padding:10px 12px;font-size:13px;line-height:1.45;color:#66615b;outline:none;border-right:1px solid #f0ede7;background:white}
 
 .list-empty{border:1px dashed var(--line);border-radius:10px;padding:30px;text-align:center;color:var(--muted)}
 .ordered-item{display:flex;align-items:stretch;gap:7px;margin:7px 0}
@@ -248,8 +248,20 @@ function addTask(){
   s="tasks";localStorage.setItem("pn.s",s);
 }
 function addNote(){
-  if(!p)return;const text=prompt("טקסט הפתק:","פתק חדש");if(text===null)return;const id=uid("note");
-  sendEvent({op:"upsert",project:p,section:s,kind:"note",id,data:{text,x:48,y:110,color:"yellow"}});
+  if(!p)return;
+  const text=prompt("טקסט הפתק:","פתק חדש");if(text===null)return;
+  const id=uid("note");
+  const canvas=document.getElementById("noteCanvas");
+  const r=canvas.getBoundingClientRect();
+  const noteW=220,noteH=135;
+  const centerX=window.innerWidth/2;
+  const centerY=window.innerHeight/2;
+  let x=centerX-r.left-noteW/2;
+  let y=centerY-r.top-noteH/2;
+  x=Math.max(0,Math.min(Math.max(0,canvas.clientWidth-noteW),x));
+  y=Math.max(0,y);
+  growCanvasTo(canvas,y+noteH);
+  sendEvent({op:"upsert",project:p,section:s,kind:"note",id,data:{text,x,y,color:"yellow"}});
 }
 
 function canvasBaseHeight(){
