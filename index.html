@@ -16,8 +16,14 @@ button,input{font:inherit}
 .shell{display:grid;grid-template-columns:minmax(0,1fr) 230px;grid-template-areas:"main projects";min-height:720px}
 .projects{grid-area:projects;background:var(--paper);border:1px solid var(--line);border-right:0;border-radius:0 12px 12px 0;padding:14px 10px;overflow:auto}
 .projects-title{font-size:12px;color:var(--muted);padding:4px 8px 10px}
-.project-tab{width:100%;text-align:right;border:0;background:transparent;padding:11px 12px;border-radius:8px;cursor:pointer;margin:2px 0;color:var(--ink)}
+.project-row{display:flex;align-items:center;gap:4px;border-radius:8px}
+.project-row.drag-over{background:#f4f1eb}
+.project-tab{flex:1;text-align:right;border:0;background:transparent;padding:11px 12px;border-radius:8px;cursor:pointer;margin:2px 0;color:var(--ink)}
 .project-tab:hover{background:#f4f1eb}.project-tab.active{background:var(--soft);font-weight:650}
+.project-drag{width:20px;border:0;background:transparent;color:#d2cdc4;cursor:grab;opacity:.7;padding:0}
+.project-drag:hover{opacity:1}.project-drag:active{cursor:grabbing}
+.project-add{width:100%;margin-top:10px;border:0;background:transparent;color:var(--muted);padding:9px 10px;text-align:right;cursor:pointer;border-top:1px solid #efebe4}
+.project-add:hover{color:var(--ink);background:#f8f5ef}
 .main{grid-area:main;background:var(--paper);border:1px solid var(--line);border-radius:12px 0 0 12px;min-width:0}
 .project-header{padding:24px 28px 0}.project-header h2{margin:0 0 15px;font-size:24px}
 .section-tabs{display:flex;gap:5px;border-bottom:1px solid var(--line);padding:0 6px}
@@ -64,7 +70,7 @@ button,input{font:inherit}
 <div class="app">
   <div class="topbar"><h1>הקלסר שלי</h1><a class="update-button" href="mynotebook://update">רענן ועדכן</a></div>
   <div class="shell">
-    <aside class="projects"><div class="projects-title">פרויקטים</div><div id="projectList"></div></aside>
+    <aside class="projects"><div class="projects-title">פרויקטים</div><div id="projectList"></div><button class="project-add" id="projectAddButton">＋ פרויקט</button></aside>
     <main class="main">
       <div class="project-header"><h2 id="projectTitle"></h2><div class="section-tabs" id="sectionTabs"></div></div>
       <div class="section" id="sectionArea">
@@ -76,7 +82,7 @@ button,input{font:inherit}
   </div>
 </div>
 <script>
-const projects=window.notebookData?.projects||[];
+let projects=(window.notebookData?.projects||[]).slice();
 const writingFiles=window.notebookData?.writingFiles||{};
 const sourceFiles=window.notebookData?.sourceFiles||{};
 const sections=[["writing","כתיבה"],["sources","מקורות"],["notes","הערות"],["tasks","משימות"]];
@@ -164,8 +170,22 @@ function notes(){const sec=currentSec();return Object.entries(sec.entities).filt
 function render(){
   const pl=document.getElementById("projectList");pl.innerHTML="";
   projects.forEach(name=>{
+    const row=document.createElement("div");row.className="project-row";row.draggable=true;row.dataset.project=name;
+    row.addEventListener("dragstart",ev=>{ev.dataTransfer.setData("text/plain",name)});
+    row.addEventListener("dragover",ev=>{ev.preventDefault();row.classList.add("drag-over")});
+    row.addEventListener("dragleave",()=>row.classList.remove("drag-over"));
+    row.addEventListener("drop",ev=>{
+      ev.preventDefault();row.classList.remove("drag-over");
+      const from=ev.dataTransfer.getData("text/plain");if(!from||from===name)return;
+      const order=projects.slice(),a=order.indexOf(from),b=order.indexOf(name);if(a<0||b<0)return;
+      order.splice(a,1);order.splice(b,0,from);
+      projects=order;render();
+      window.location.href="mynotebook://project-order?data="+encodeURIComponent(order.join("\n"));
+    });
+    const drag=document.createElement("button");drag.className="project-drag";drag.type="button";drag.textContent="⋮⋮";drag.title="גרור לשינוי סדר";
     const b=document.createElement("button");b.className="project-tab"+(name===p?" active":"");b.textContent=name;
-    b.onclick=()=>{p=name;localStorage.setItem("pn.p",p);render()};pl.appendChild(b);
+    b.onclick=()=>{p=name;localStorage.setItem("pn.p",p);render()};
+    row.append(drag,b);pl.appendChild(row);
   });
   document.getElementById("projectTitle").textContent=p||"";
   const st=document.getElementById("sectionTabs");st.innerHTML="";
@@ -336,6 +356,16 @@ function renderNotes(){
     el.append(head,body);canvas.appendChild(el);
   });
 }
+function addProject(){
+  const raw=prompt("שם הפרויקט החדש:");
+  if(raw===null)return;
+  const name=raw.trim();
+  if(!name)return;
+  if(projects.includes(name)){alert("כבר קיים פרויקט בשם הזה.");return}
+  localStorage.setItem("pn.p",name);
+  window.location.href="mynotebook://project-add?name="+encodeURIComponent(name);
+}
+document.getElementById("projectAddButton").onclick=addProject;
 window.addEventListener("resize",renderNotes);
 render();
 </script>
