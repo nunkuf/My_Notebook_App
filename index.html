@@ -78,6 +78,7 @@ button,input{font:inherit}
 <script>
 const projects=window.notebookData?.projects||[];
 const writingFiles=window.notebookData?.writingFiles||{};
+const sourceFiles=window.notebookData?.sourceFiles||{};
 const sections=[["writing","כתיבה"],["sources","מקורות"],["notes","הערות"],["tasks","משימות"]];
 const NOTE_COLORS={yellow:"#fff3b8",blue:"#dfeef9",green:"#e2f1df",pink:"#f7e1e7",peach:"#f8e5d2",gray:"#eceae5"};
 let p=localStorage.getItem("pn.p"); if(!projects.includes(p)) p=projects[0]||"";
@@ -134,14 +135,15 @@ function sendEvent(ev){
 }
 function uid(prefix){return prefix+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8)}
 function notebookURL(path){return "mynotebook://open?path="+encodeURI(path)}
-function removeURL(path){return "mynotebook://remove?project="+encodeURIComponent(p)+"&path="+encodeURIComponent(path)}
+function removeURL(path){return "mynotebook://remove?project="+encodeURIComponent(p)+"&section="+encodeURIComponent(s)+"&path="+encodeURIComponent(path)}
 function fileId(path){return "file:"+path}
 
 function currentSec(){return ensureSection(p,s)}
 function linearEntries(){
   const sec=currentSec(), map={};
-  if(s==="writing"){
-    (writingFiles[p]||[]).forEach(f=>{
+  if(s==="writing"||s==="sources"){
+    const files=s==="writing"?(writingFiles[p]||[]):(sourceFiles[p]||[]);
+    files.forEach(f=>{
       const id=fileId(f.path),meta=sec.entities[id]||{};
       map[id]={id,kind:"file",name:f.name,path:f.path,description:meta.description||""};
     });
@@ -179,7 +181,7 @@ function tool(label,fn){
 }
 function renderToolbar(){
   const t=document.getElementById("toolbar");t.innerHTML="";
-  if(s==="writing"||s==="sources")t.appendChild(tool("＋ הוסף קובץ",()=>{window.location.href="mynotebook://choose?project="+encodeURIComponent(p)}));
+  if(s==="writing"||s==="sources")t.appendChild(tool("＋ הוסף קובץ",()=>{window.location.href="mynotebook://choose?project="+encodeURIComponent(p)+"&section="+encodeURIComponent(s)}));
   if(s==="tasks")t.appendChild(tool("＋ משימה",addTask));
   t.appendChild(tool("＋ תיבת טקסט",addTextbox));
   t.appendChild(tool("＋ פתק",addNote));
